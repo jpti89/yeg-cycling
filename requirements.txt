@@ -1,0 +1,8 @@
+numpy
+pandas
+pydeck
+streamlit
+keplergl
+datetime
+sodapy
+plotly.express
