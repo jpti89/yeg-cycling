@@ -26,13 +26,13 @@ LOGGER = get_logger(__name__)
 
 def run():
     st.set_page_config(
-        page_title="YEG Cycling",
-        page_icon="🚴",
+        page_title="YEG Cycling & Pedestrian",
+        page_icon="🚴🚶",
         layout="wide",
         initial_sidebar_state="collapsed",
     )
 
-    st.write("# Welcome to YEG CYCLING!🚴")
+    st.write("# Welcome to YEG CYCLING & PEDESTRIANS!🚴🚶")
 
     client = Socrata("data.edmonton.ca",
                   '0QYjRL0AGkE3yWTOhXlgpGpzA',
@@ -52,7 +52,6 @@ def run():
                       'pedestrian_count_wbd',
                       'pedestrian_count_nbd',
                       'pedestrian_count_sbd',
-                      'total_pedestrian_count',
                       'cyclist_count_ebd',
                       'cyclist_count_wbd',
                       'cyclist_count_nbd',
@@ -66,14 +65,33 @@ def run():
                       ':@computed_region_eq8d_jmrp',
                       'location',
                       'counter_configuration',
-                      'log_timstamp',
                      ] , axis=1)
     
     df["total_cyclist_count"] = pd.to_numeric(df["total_cyclist_count"], downcast="float")
+    df["total_pedestrian_count"] = pd.to_numeric(df["total_pedestrian_count"], downcast="float")
     df["latitude"] = pd.to_numeric(df["latitude"], downcast="float")
     df["longitude"] = pd.to_numeric(df["longitude"], downcast="float")
-    #df['log_timstamp'] = pd.to_datetime(df['log_timstamp'])
-  
+    df['log_timstamp'] = pd.to_datetime(df['log_timstamp'])
+    
+    start_time = st.slider(
+        "Start date of data",
+        #value = datetime.datetime.now,
+        min_value = datetime.datetime(2024,1,1,0,0),
+        max_value = datetime.datetime(2024,3,20,0,0),
+        step = datetime.timedelta(minutes=15),
+        format = "MM/DD/YY - hh:mm")
+    st.write("Start time:", start_time)
+
+    df = df[(df['log_timstamp'] >= start_time)]
+    df['log_timstamp'] = df['log_timstamp'].astype(str)
+
+
+
+    option = st.selectbox(
+    'Would you like to see the data from Cyclist or Pedestrians?',
+    ('Cyclist', 'Pedestrians'))
+    st.write('You selected:', option)
+
     config = {
         "version": "v1",
         "config": {
@@ -86,20 +104,24 @@ def run():
             }
         },
     }
+
     map_1 = KeplerGl(height=1000)
-    map_1.add_data(data=df, name='counter_location')
     map_1.config = config
+
+    if option == 'Cyclist':
+        df['total_cyclist_count_to_date'] = df.groupby('counter_location_description')['total_cyclist_count'].transform('sum')
+        df = df.drop(['total_cyclist_count','total_pedestrian_count'] , axis=1)
+        map_1.add_data(data=df, name='counter_location')
+
+    elif option == 'Pedestrians':
+        df['total_pedestrian_count_to_date'] = df.groupby('counter_location_description')['total_pedestrian_count'].transform('sum')
+        df = df.drop(['total_pedestrian_count', 'total_cyclist_count'] , axis=1)
+        map_1.add_data(data=df, name='counter_location')
+    
 
     keplergl_static(map_1)
 
-    start_time = st.slider(
-        "Start date of data",
-        #value = datetime.datetime.now,
-        min_value = datetime.datetime(2024,1,1,0,0),
-        max_value = datetime.datetime(2024,3,20,0,0),
-        step = datetime.timedelta(minutes=15),
-        format = "MM/DD/YY - hh:mm")
-    st.write("Start time:", start_time)
+
 
 
 if __name__ == "__main__":
