@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_keplergl import keplergl_static
 from keplergl import KeplerGl
 import pandas as pd
 from sodapy import Socrata
@@ -36,8 +37,13 @@ def plotting_demo():
                       ':@computed_region_eq8d_jmrp',
                       'location',
                       'counter_configuration',
+                      'log_timstamp',
                      ] , axis=1)
     
+    df["total_cyclist_count"] = pd.to_numeric(df["total_cyclist_count"], downcast="float")
+    df["latitude"] = pd.to_numeric(df["latitude"], downcast="float")
+    df["longitude"] = pd.to_numeric(df["longitude"], downcast="float")
+    #df['log_timstamp'] = pd.to_datetime(df['log_timstamp'])
   
     config = {
         "version": "v1",

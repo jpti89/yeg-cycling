@@ -2,7 +2,7 @@ numpy
 pandas
 pydeck
 streamlit
-keplergl
+streamlit_keplergl
 datetime
 sodapy
 plotly.express

@@ -18,6 +18,8 @@ import plotly.express as px
 import pandas as pd
 from sodapy import Socrata
 import datetime
+from keplergl import KeplerGl
+from streamlit_keplergl import keplergl_static
 #datetime.datetime.strptime
 
 LOGGER = get_logger(__name__)
@@ -25,12 +27,12 @@ LOGGER = get_logger(__name__)
 def run():
     st.set_page_config(
         page_title="YEG Cycling",
-        page_icon="🧊",
+        page_icon="🚴",
         layout="wide",
         initial_sidebar_state="collapsed",
     )
 
-    st.write("# Welcome to YEG CYCLING!")
+    st.write("# Welcome to YEG CYCLING!🚴")
 
     client = Socrata("data.edmonton.ca",
                   '0QYjRL0AGkE3yWTOhXlgpGpzA',
@@ -39,7 +41,7 @@ def run():
 
     # First 2000 results, returned as JSON from API / converted to Python list of
     # dictionaries by sodapy.
-    results = client.get("tq23-qn4m", limit=10)
+    results = client.get("tq23-qn4m", limit=2000)
 
     # Convert to pandas DataFrame
     results_df = pd.DataFrame.from_records(results)
@@ -64,29 +66,40 @@ def run():
                       ':@computed_region_eq8d_jmrp',
                       'location',
                       'counter_configuration',
+                      'log_timstamp',
                      ] , axis=1)
     
     df["total_cyclist_count"] = pd.to_numeric(df["total_cyclist_count"], downcast="float")
     df["latitude"] = pd.to_numeric(df["latitude"], downcast="float")
     df["longitude"] = pd.to_numeric(df["longitude"], downcast="float")
-    df['log_timstamp'] = pd.to_datetime(df['log_timstamp'])
+    #df['log_timstamp'] = pd.to_datetime(df['log_timstamp'])
+  
+    config = {
+        "version": "v1",
+        "config": {
+            "mapState": {
+                "bearing": 0,
+                "latitude": 53.55014 ,
+                "longitude": -113.46871,
+                "pitch": 0,
+                "zoom": 10,
+            }
+        },
+    }
+    map_1 = KeplerGl(height=1000)
+    map_1.add_data(data=df, name='counter_location')
+    map_1.config = config
 
-    fig = px.scatter_mapbox(
-    df,
-    lat="latitude",
-    lon="longitude",
-    hover_name="counter_location_description",
-    hover_data=["log_timstamp", "total_cyclist_count"],
-    color_discrete_sequence=["fuchsia"],
-    zoom=11,
-    height=300,
-    )
+    keplergl_static(map_1)
 
-    fig.update_layout(mapbox_style="open-street-map")
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-    #fig.update_layout(mapbox_bounds={"west": -180, "east": -50, "south": 20, "north": 90})
-    fig.show()
-    
+    start_time = st.slider(
+        "Start date of data",
+        #value = datetime.datetime.now,
+        min_value = datetime.datetime(2024,1,1,0,0),
+        max_value = datetime.datetime(2024,3,20,0,0),
+        step = datetime.timedelta(minutes=15),
+        format = "MM/DD/YY - hh:mm")
+    st.write("Start time:", start_time)
 
 
 if __name__ == "__main__":
