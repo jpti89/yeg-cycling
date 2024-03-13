@@ -24,6 +24,15 @@ from streamlit_keplergl import keplergl_static
 
 LOGGER = get_logger(__name__)
 
+client = Socrata("data.edmonton.ca",
+                '0QYjRL0AGkE3yWTOhXlgpGpzA',
+                username="torresir@ualberta.ca",
+                password="=4F^!k8}%%:6f}W")
+
+# First 2000 results, returned as JSON from API / converted to Python list of
+# dictionaries by sodapy.
+results = client.get("tq23-qn4m", limit=2000)
+
 def run():
     st.set_page_config(
         page_title="YEG Cycling & Pedestrian",
@@ -33,15 +42,6 @@ def run():
     )
 
     st.write("# Welcome to YEG CYCLING & PEDESTRIANS!🚴🚶")
-
-    client = Socrata("data.edmonton.ca",
-                  '0QYjRL0AGkE3yWTOhXlgpGpzA',
-                  username="torresir@ualberta.ca",
-                  password="=4F^!k8}%%:6f}W")
-
-    # First 2000 results, returned as JSON from API / converted to Python list of
-    # dictionaries by sodapy.
-    results = client.get("tq23-qn4m", limit=2000)
 
     # Convert to pandas DataFrame
     results_df = pd.DataFrame.from_records(results)
@@ -110,12 +110,12 @@ def run():
 
     if option == 'Cyclist':
         df['total_cyclist_count_to_date'] = df.groupby('counter_location_description')['total_cyclist_count'].transform('sum')
-        df = df.drop(['total_cyclist_count','total_pedestrian_count'] , axis=1)
+        df = df.drop(['total_cyclist_count','total_pedestrian_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df, name='counter_location')
 
     elif option == 'Pedestrians':
         df['total_pedestrian_count_to_date'] = df.groupby('counter_location_description')['total_pedestrian_count'].transform('sum')
-        df = df.drop(['total_pedestrian_count', 'total_cyclist_count'] , axis=1)
+        df = df.drop(['total_pedestrian_count', 'total_cyclist_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df, name='counter_location')
     
 
