@@ -4,3 +4,4 @@ pandas
 pydeck
 streamlit
 keplergl
+streamlit_keplergl
