@@ -1,8 +1,0 @@
-altair
-numpy
-pandas
-pydeck
-streamlit
-sodapy
-plotly.express
-datetime

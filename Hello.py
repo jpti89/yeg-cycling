@@ -78,7 +78,7 @@ def run():
     hover_name="counter_location_description",
     hover_data=["log_timstamp", "total_cyclist_count"],
     color_discrete_sequence=["fuchsia"],
-    zoom=10,
+    zoom=11,
     height=300,
     )
 
