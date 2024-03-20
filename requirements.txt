@@ -6,3 +6,4 @@ streamlit_keplergl
 datetime
 sodapy
 plotly.express
+plotly_calplot

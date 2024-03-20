@@ -20,6 +20,8 @@ from sodapy import Socrata
 import datetime
 from keplergl import KeplerGl
 from streamlit_keplergl import keplergl_static
+from plotly_calplot import calplot
+
 #datetime.datetime.strptime
 
 LOGGER = get_logger(__name__)
@@ -31,7 +33,10 @@ client = Socrata("data.edmonton.ca",
 
 # First 2000 results, returned as JSON from API / converted to Python list of
 # dictionaries by sodapy.
-results = client.get("tq23-qn4m", limit=2000)
+results = client.get("tq23-qn4m", limit=350000)
+# Convert to pandas DataFrame
+
+
 
 def run():
     st.set_page_config(
@@ -43,54 +48,53 @@ def run():
 
     st.write("# Welcome to YEG CYCLING & PEDESTRIANS!🚴🚶")
 
-    # Convert to pandas DataFrame
+    option = st.selectbox(
+    'Would you like to see the data from Cyclist or Pedestrians?',
+    ('Cyclist', 'Pedestrians'))
+    st.write('You selected:', option)
+
+    start_time = st.slider(
+        "Start/End date of data",
+        value= (datetime.datetime(2024,1,1,0,0), datetime.datetime(2024,3,19,0,0)),
+        min_value = datetime.datetime(2023,1,1,0,0),
+        max_value = datetime.datetime(2024,3,20,0,0),
+        step = datetime.timedelta(minutes=15),
+        format = "MM/DD/YY - hh:mm")
+    #st.write("Start time:", start_time)
+
     results_df = pd.DataFrame.from_records(results)
 
     df = results_df.drop(['log_time_interval_minutes', 
-                      'direction_of_travel', 
-                      'pedestrian_count_ebd',
-                      'pedestrian_count_wbd',
-                      'pedestrian_count_nbd',
-                      'pedestrian_count_sbd',
-                      'cyclist_count_ebd',
-                      'cyclist_count_wbd',
-                      'cyclist_count_nbd',
-                      'cyclist_count_sbd',
-                      'combined_total_count',
-                      ':@computed_region_7ccj_gre3',
-                      ':@computed_region_ecxu_fw7u',
-                      ':@computed_region_izdr_ja4x',
-                      ':@computed_region_5jki_au6x',
-                      ':@computed_region_mnf4_kaez',
-                      ':@computed_region_eq8d_jmrp',
-                      'location',
-                      'counter_configuration',
-                     ] , axis=1)
-    
+                        'direction_of_travel', 
+                        'pedestrian_count_ebd',
+                        'pedestrian_count_wbd',
+                        'pedestrian_count_nbd',
+                        'pedestrian_count_sbd',
+                        'cyclist_count_ebd',
+                        'cyclist_count_wbd',
+                        'cyclist_count_nbd',
+                        'cyclist_count_sbd',
+                        'combined_total_count',
+                        ':@computed_region_7ccj_gre3',
+                        ':@computed_region_ecxu_fw7u',
+                        ':@computed_region_izdr_ja4x',
+                        ':@computed_region_5jki_au6x',
+                        ':@computed_region_mnf4_kaez',
+                        ':@computed_region_eq8d_jmrp',
+                        'location',
+                        'counter_configuration',
+                        ] , axis=1)
+
     df["total_cyclist_count"] = pd.to_numeric(df["total_cyclist_count"], downcast="float")
     df["total_pedestrian_count"] = pd.to_numeric(df["total_pedestrian_count"], downcast="float")
     df["latitude"] = pd.to_numeric(df["latitude"], downcast="float")
     df["longitude"] = pd.to_numeric(df["longitude"], downcast="float")
     df['log_timstamp'] = pd.to_datetime(df['log_timstamp'])
-    
-    start_time = st.slider(
-        "Start date of data",
-        #value = datetime.datetime.now,
-        min_value = datetime.datetime(2024,1,1,0,0),
-        max_value = datetime.datetime(2024,3,20,0,0),
-        step = datetime.timedelta(minutes=15),
-        format = "MM/DD/YY - hh:mm")
-    st.write("Start time:", start_time)
 
-    df = df[(df['log_timstamp'] >= start_time)]
+    df = df[df['log_timstamp'].between(*start_time, inclusive='both')]
+
+
     df['log_timstamp'] = df['log_timstamp'].astype(str)
-
-
-
-    option = st.selectbox(
-    'Would you like to see the data from Cyclist or Pedestrians?',
-    ('Cyclist', 'Pedestrians'))
-    st.write('You selected:', option)
 
     config = {
         "version": "v1",
@@ -100,26 +104,54 @@ def run():
                 "latitude": 53.55014 ,
                 "longitude": -113.46871,
                 "pitch": 0,
-                "zoom": 10,
+                "zoom": 12,
             }
         },
     }
 
-    map_1 = KeplerGl(height=1000)
+    map_1 = KeplerGl(height=800)
     map_1.config = config
 
     if option == 'Cyclist':
         df['total_cyclist_count_to_date'] = df.groupby('counter_location_description')['total_cyclist_count'].transform('sum')
-        df = df.drop(['total_cyclist_count','total_pedestrian_count','log_timstamp','row_id'] , axis=1)
-        map_1.add_data(data=df, name='counter_location')
+        df2 = df.drop(['total_cyclist_count','total_pedestrian_count','log_timstamp','row_id'] , axis=1)
+        map_1.add_data(data=df2, name='counter_location')
+        keplergl_static(map_1)
+
+        df_day=df
+        df_day['log_timstamp'] = pd.to_datetime(df_day['log_timstamp'])
+
+        df_day = df.groupby([pd.Grouper(key='log_timstamp', freq='D')
+        ]).sum().reset_index()
+        df_day = df_day.drop(['latitude', 'longitude'] , axis=1)
+        fig = calplot(df_day, x="log_timstamp", y="total_cyclist_count", dark_theme=True, years_title=True,name="total_cyclist_count",
+              showscale=True, cmap_max=5000, cmap_min=0,month_lines_width=3, month_lines_color="#fff")
+        st.plotly_chart(fig,use_container_width = True)
+
+
+
+
 
     elif option == 'Pedestrians':
         df['total_pedestrian_count_to_date'] = df.groupby('counter_location_description')['total_pedestrian_count'].transform('sum')
-        df = df.drop(['total_pedestrian_count', 'total_cyclist_count','log_timstamp','row_id'] , axis=1)
-        map_1.add_data(data=df, name='counter_location')
+        df2 = df.drop(['total_pedestrian_count', 'total_cyclist_count','log_timstamp','row_id'] , axis=1)
+        map_1.add_data(data=df2, name='counter_location')
+        keplergl_static(map_1)
+
+        df_day=df
+        df_day['log_timstamp'] = pd.to_datetime(df_day['log_timstamp'])
+
+        df_day = df.groupby([pd.Grouper(key='log_timstamp', freq='D')
+        ]).sum().reset_index()
+        df_day = df_day.drop(['latitude', 'longitude'] , axis=1)
+        fig = calplot(df_day, x="log_timstamp", y="total_pedestrian_count", dark_theme=True, years_title=True,name="total_pedestrian_count",
+              showscale=True, cmap_max=12000, cmap_min=0,month_lines_width=3, month_lines_color="#fff")
+        st.plotly_chart(fig,use_container_width = True)
+
+
     
 
-    keplergl_static(map_1)
+    
 
 
 
