@@ -52,16 +52,14 @@ def run():
     option = st.selectbox(
     'Would you like to see the data from Cyclist or Pedestrians?',
     ('Cyclist', 'Pedestrians'))
-    st.write('You selected:', option)
 
     start_time = st.slider(
-        "Start/End date of data",
+        "Start and End date of data to visualize",
         value= (datetime.datetime(2024,1,1,0,0), datetime.datetime(2024,3,19,0,0)),
         min_value = datetime.datetime(2023,1,1,0,0),
         max_value = datetime.datetime(2024,3,20,0,0),
         step = datetime.timedelta(minutes=15),
         format = "MM/DD/YY - hh:mm")
-    #st.write("Start time:", start_time)
 
     results_df = load_data()
 
