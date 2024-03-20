@@ -19,7 +19,7 @@ def load_data():
 
     # First 2000 results, returned as JSON from API / converted to Python list of
     # dictionaries by sodapy.
-    results = client.get("tq23-qn4m", limit=300000)
+    results = client.get("tq23-qn4m", limit=200000)
     results = pd.DataFrame.from_records(results)
     return results
 
