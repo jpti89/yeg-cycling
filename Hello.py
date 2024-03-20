@@ -1,17 +1,3 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
 from streamlit.logger import get_logger
 import pandas as pd
@@ -21,8 +7,6 @@ from keplergl import KeplerGl
 from streamlit_keplergl import keplergl_static
 from plotly_calplot import calplot
 from streamlit.hello.utils import show_code
-
-#datetime.datetime.strptime
 
 LOGGER = get_logger(__name__)
 
@@ -95,21 +79,7 @@ def run():
 
     df['log_timstamp'] = df['log_timstamp'].astype(str)
 
-    config = {
-        "version": "v1",
-        "config": {
-            "mapState": {
-                "bearing": 0,
-                "latitude": 53.55014 ,
-                "longitude": -113.46871,
-                "pitch": 0,
-                "zoom": 12,
-            }
-        },
-    }
-
     map_1 = KeplerGl(height=800)
-    map_1.config = config
 
     with open('./Data/Neighbourhood Boundaries 2019_20240320.geojson', 'r') as f:
         boundaries = f.read()
@@ -126,12 +96,12 @@ def run():
         df['total_cyclist_count_to_date'] = df.groupby('counter_location_description')['total_cyclist_count'].transform('sum')
         df2 = df.drop(['total_cyclist_count','total_pedestrian_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df2, name='counter_location')
-        map_1.add_data(data=racks, name='racks')
+        #map_1.add_data(data=racks, name='racks')
         map_1.add_data(data=routes, name='routes')
-        map_1.add_data(data=boundaries, name='boundaries')
+        #map_1.add_data(data=boundaries, name='boundaries')
 
         
-        keplergl_static(map_1)
+        keplergl_static(map_1, center_map=True)
 
         df_day=df
         df_day['log_timstamp'] = pd.to_datetime(df_day['log_timstamp'])
@@ -151,8 +121,8 @@ def run():
         df2 = df.drop(['total_pedestrian_count', 'total_cyclist_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df2, name='counter_location')
         map_1.add_data(data=lrt_routes, name='lrt_routes')
-        map_1.add_data(data=boundaries, name='geojson')
-        keplergl_static(map_1)
+        #map_1.add_data(data=boundaries, name='geojson')
+        keplergl_static(map_1, center_map=True)
 
         df_day=df
         df_day['log_timstamp'] = pd.to_datetime(df_day['log_timstamp'])
@@ -163,8 +133,7 @@ def run():
         fig = calplot(df_day, x="log_timstamp", y="total_pedestrian_count", dark_theme=False, years_title=True,name="total_pedestrian_count",
               showscale=True, cmap_max=12000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
         st.plotly_chart(fig,use_container_width = True)
-
-
+    
 
 if __name__ == "__main__":
     run()
