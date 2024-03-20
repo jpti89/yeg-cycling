@@ -111,10 +111,16 @@ def run():
     map_1 = KeplerGl(height=800)
     map_1.config = config
 
+    with open('./Data/Neighbourhood Boundaries 2019_20240320.geojson', 'r') as f:
+        geojson = f.read()
+    
     if option == 'Cyclist':
         df['total_cyclist_count_to_date'] = df.groupby('counter_location_description')['total_cyclist_count'].transform('sum')
         df2 = df.drop(['total_cyclist_count','total_pedestrian_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df2, name='counter_location')
+        map_1.add_data(data=geojson, name='geojson')
+
+        
         keplergl_static(map_1)
 
         df_day=df
@@ -132,6 +138,7 @@ def run():
         df['total_pedestrian_count_to_date'] = df.groupby('counter_location_description')['total_pedestrian_count'].transform('sum')
         df2 = df.drop(['total_pedestrian_count', 'total_cyclist_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df2, name='counter_location')
+        map_1.add_data(data=geojson, name='geojson')
         keplergl_static(map_1)
 
         df_day=df
