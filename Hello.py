@@ -112,13 +112,23 @@ def run():
     map_1.config = config
 
     with open('./Data/Neighbourhood Boundaries 2019_20240320.geojson', 'r') as f:
-        geojson = f.read()
+        boundaries = f.read()
     
+
     if option == 'Cyclist':
+        
+        with open('./Data/Bike Routes_20240320.geojson', 'r') as f:
+            routes = f.read()
+
+        with open('./Data/Bike_Racks__Post_and_Ring__and_Bulk_20240320.csv', 'r') as f:
+            racks = f.read()
+
         df['total_cyclist_count_to_date'] = df.groupby('counter_location_description')['total_cyclist_count'].transform('sum')
         df2 = df.drop(['total_cyclist_count','total_pedestrian_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df2, name='counter_location')
-        map_1.add_data(data=geojson, name='geojson')
+        map_1.add_data(data=racks, name='racks')
+        map_1.add_data(data=routes, name='routes')
+        map_1.add_data(data=boundaries, name='boundaries')
 
         
         keplergl_static(map_1)
@@ -133,12 +143,15 @@ def run():
               showscale=True, cmap_max=5000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
         st.plotly_chart(fig,use_container_width = True)
 
-
     elif option == 'Pedestrians':
+        with open('./Data/LRT Routes_20240320.geojson', 'r') as f:
+            lrt_routes = f.read()
+
         df['total_pedestrian_count_to_date'] = df.groupby('counter_location_description')['total_pedestrian_count'].transform('sum')
         df2 = df.drop(['total_pedestrian_count', 'total_cyclist_count','log_timstamp','row_id'] , axis=1)
         map_1.add_data(data=df2, name='counter_location')
-        map_1.add_data(data=geojson, name='geojson')
+        map_1.add_data(data=lrt_routes, name='lrt_routes')
+        map_1.add_data(data=boundaries, name='geojson')
         keplergl_static(map_1)
 
         df_day=df
