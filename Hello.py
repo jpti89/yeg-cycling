@@ -125,12 +125,9 @@ def run():
         df_day = df.groupby([pd.Grouper(key='log_timstamp', freq='D')
         ]).sum().reset_index()
         df_day = df_day.drop(['latitude', 'longitude'] , axis=1)
-        fig = calplot(df_day, x="log_timstamp", y="total_cyclist_count", dark_theme=True, years_title=True,name="total_cyclist_count",
-              showscale=True, cmap_max=5000, cmap_min=0,month_lines_width=3, month_lines_color="#fff")
+        fig = calplot(df_day, x="log_timstamp", y="total_cyclist_count", dark_theme=False, years_title=True,name="total_cyclist_count",
+              showscale=True, cmap_max=5000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
         st.plotly_chart(fig,use_container_width = True)
-
-
-
 
 
     elif option == 'Pedestrians':
@@ -145,15 +142,9 @@ def run():
         df_day = df.groupby([pd.Grouper(key='log_timstamp', freq='D')
         ]).sum().reset_index()
         df_day = df_day.drop(['latitude', 'longitude'] , axis=1)
-        fig = calplot(df_day, x="log_timstamp", y="total_pedestrian_count", dark_theme=True, years_title=True,name="total_pedestrian_count",
-              showscale=True, cmap_max=12000, cmap_min=0,month_lines_width=3, month_lines_color="#fff")
+        fig = calplot(df_day, x="log_timstamp", y="total_pedestrian_count", dark_theme=False, years_title=True,name="total_pedestrian_count",
+              showscale=True, cmap_max=12000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
         st.plotly_chart(fig,use_container_width = True)
-
-
-    
-
-    
-
 
 
 
