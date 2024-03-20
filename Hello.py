@@ -14,7 +14,6 @@
 
 import streamlit as st
 from streamlit.logger import get_logger
-import plotly.express as px
 import pandas as pd
 from sodapy import Socrata
 import datetime
@@ -36,7 +35,7 @@ def load_data():
 
     # First 2000 results, returned as JSON from API / converted to Python list of
     # dictionaries by sodapy.
-    results = client.get("tq23-qn4m", limit=250000)
+    results = client.get("tq23-qn4m", limit=2000)
     results = pd.DataFrame.from_records(results)
     return results
 
