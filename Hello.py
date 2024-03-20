@@ -33,7 +33,7 @@ client = Socrata("data.edmonton.ca",
 
 # First 2000 results, returned as JSON from API / converted to Python list of
 # dictionaries by sodapy.
-results = client.get("tq23-qn4m", limit=350000)
+results = client.get("tq23-qn4m", limit=300000)
 # Convert to pandas DataFrame
 
 
