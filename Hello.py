@@ -21,22 +21,24 @@ import datetime
 from keplergl import KeplerGl
 from streamlit_keplergl import keplergl_static
 from plotly_calplot import calplot
+from streamlit.hello.utils import show_code
 
 #datetime.datetime.strptime
 
 LOGGER = get_logger(__name__)
 
-client = Socrata("data.edmonton.ca",
+@st.cache_data
+def load_data():
+    client = Socrata("data.edmonton.ca",
                 '0QYjRL0AGkE3yWTOhXlgpGpzA',
                 username="torresir@ualberta.ca",
                 password="=4F^!k8}%%:6f}W")
 
-# First 2000 results, returned as JSON from API / converted to Python list of
-# dictionaries by sodapy.
-results = client.get("tq23-qn4m", limit=300000)
-# Convert to pandas DataFrame
-
-
+    # First 2000 results, returned as JSON from API / converted to Python list of
+    # dictionaries by sodapy.
+    results = client.get("tq23-qn4m", limit=300000)
+    results = pd.DataFrame.from_records(results)
+    return results
 
 def run():
     st.set_page_config(
@@ -62,7 +64,7 @@ def run():
         format = "MM/DD/YY - hh:mm")
     #st.write("Start time:", start_time)
 
-    results_df = pd.DataFrame.from_records(results)
+    results_df = load_data()
 
     df = results_df.drop(['log_time_interval_minutes', 
                         'direction_of_travel', 
@@ -158,3 +160,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    show_code(run)
