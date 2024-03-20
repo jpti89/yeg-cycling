@@ -19,7 +19,7 @@ def load_data():
 
     # First 2000 results, returned as JSON from API / converted to Python list of
     # dictionaries by sodapy.
-    results = client.get("tq23-qn4m", limit=250000)
+    results = client.get("tq23-qn4m", limit=300000)
     results = pd.DataFrame.from_records(results)
     return results
 
@@ -110,7 +110,7 @@ def run():
         ]).sum().reset_index()
         df_day = df_day.drop(['latitude', 'longitude'] , axis=1)
         fig = calplot(df_day, x="log_timstamp", y="total_cyclist_count", dark_theme=False, years_title=True,name="total_cyclist_count",
-              showscale=True, cmap_max=5000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
+              showscale=True, cmap_max=7200, cmap_min=0,month_lines_width=2, month_lines_color="#666")
         st.plotly_chart(fig,use_container_width = True)
 
     elif option == 'Pedestrians':
@@ -131,7 +131,7 @@ def run():
         ]).sum().reset_index()
         df_day = df_day.drop(['latitude', 'longitude'] , axis=1)
         fig = calplot(df_day, x="log_timstamp", y="total_pedestrian_count", dark_theme=False, years_title=True,name="total_pedestrian_count",
-              showscale=True, cmap_max=12000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
+              showscale=True, cmap_max=25000, cmap_min=0,month_lines_width=2, month_lines_color="#666")
         st.plotly_chart(fig,use_container_width = True)
     
 
